@@ -17,14 +17,7 @@ namespace Backup.Service
                 {
                     services.AddHostedService<BackupService>();
                 });
-            if (isDebugging)
-            {
-                await hostBuilder.RunTheServiceAsync();
-            }
-            else
-            {
-                await hostBuilder.RunConsoleAsync();
-            }
+            await hostBuilder.RunConsoleAsync();
         }
     }
 }

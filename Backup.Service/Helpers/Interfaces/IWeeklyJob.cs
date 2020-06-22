@@ -2,5 +2,5 @@
 
 namespace Backup.Service.Helpers.Interfaces
 {
-    public interface IWeeklyJob : IJob { }
+    public interface IMinutelyJob : IJob { }
 }

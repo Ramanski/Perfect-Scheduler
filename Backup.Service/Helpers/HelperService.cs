@@ -62,7 +62,7 @@ namespace Backup.Service.Helpers
             try
             {
                 _logger.Info($"{DateTime.Now}: The PerformService() is called with {schedule} schedule");
-                var fileName = $"{DateTime.Now.Day}_{DateTime.Now.Month}_{DateTime.Now.Year}_{schedule}_backup.zip";
+                var fileName = $"{DateTime.Now.Year}_{DateTime.Now.Month}_{DateTime.Now.Day}_{DateTime.Now.Hour}_{DateTime.Now.Minute}{schedule}_backup.zip";
                 var path = $"{FolderToZipLocation}\\{fileName}";
                 if (!string.IsNullOrWhiteSpace(schedule))
                 {

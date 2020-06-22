@@ -29,8 +29,8 @@ namespace Backup.Service
                 scheduler.JobFactory = new CustomJobFactory(serviceProvider);
                 await scheduler.Start();
                 await ConfigureDailyJob(scheduler);
-                await ConfigureWeeklyJob(scheduler);
-                await ConfigureMonthlyJob(scheduler);
+                await ConfigureMinutelyJob(scheduler);
+                await ConfigureHourlyJob(scheduler);
             }
             catch (Exception ex)
             {
@@ -52,9 +52,9 @@ namespace Backup.Service
             }
         }
 
-        private async Task ConfigureWeeklyJob(IScheduler scheduler)
+        private async Task ConfigureMinutelyJob(IScheduler scheduler)
         {
-            var weklyJob = GetWeeklyJob();
+            var weklyJob = GetMinutelyJob();
             if (await scheduler.CheckExists(weklyJob.Key))
             {
                 await scheduler.ResumeJob(weklyJob.Key);
@@ -62,21 +62,21 @@ namespace Backup.Service
             }
             else
             {
-                await scheduler.ScheduleJob(weklyJob, GetWeeklyJobTrigger());
+                await scheduler.ScheduleJob(weklyJob, GetMinutelyJobTrigger());
             }
         }
 
-        private async Task ConfigureMonthlyJob(IScheduler scheduler)
+        private async Task ConfigureHourlyJob(IScheduler scheduler)
         {
-            var monthlyJob = GetMonthlyJob();
-            if (await scheduler.CheckExists(monthlyJob.Key))
+            var HourlyJob = GetHourlyJob();
+            if (await scheduler.CheckExists(HourlyJob.Key))
             {
-                await scheduler.ResumeJob(monthlyJob.Key);
-                _logger.Info($"The job key {monthlyJob.Key} was already existed, thus resuming the same");
+                await scheduler.ResumeJob(HourlyJob.Key);
+                _logger.Info($"The job key {HourlyJob.Key} was already existed, thus resuming the same");
             }
             else
             {
-                await scheduler.ScheduleJob(monthlyJob, GetMonthlyJobTrigger());
+                await scheduler.ScheduleJob(HourlyJob, GetHourlyJobTrigger());
             }
         }
 
@@ -90,8 +90,8 @@ namespace Backup.Service
         {
             var services = new ServiceCollection()
                 .AddScoped<IDailyJob, DailyJob>()
-                .AddScoped<IWeeklyJob, WeeklyJob>()
-                .AddScoped<IMonthlyJob, MonthlyJob>()
+                .AddScoped<IMinutelyJob, MinutelyJob>()
+                .AddScoped<IHourlyJob, HourlyJob>()
                 .AddScoped<IHelperService, HelperService>();
             return services.BuildServiceProvider();
         }
@@ -111,48 +111,48 @@ namespace Backup.Service
                      .RepeatForever())
                  .Build();
         }
-        private IJobDetail GetWeeklyJob()
+        private IJobDetail GetMinutelyJob()
         {
-            return JobBuilder.Create<IWeeklyJob>()
-                .WithIdentity("weeklyjob", "weeklygroup")
+            return JobBuilder.Create<IMinutelyJob>()
+                .WithIdentity("Minutelyjob", "Minutelygroup")
                 .Build();
         }
-        private ITrigger GetWeeklyJobTrigger()
+        private ITrigger GetMinutelyJobTrigger()
         {
             return TriggerBuilder.Create()
-                 .WithIdentity("weeklytrigger", "weeklygroup")
+                 .WithIdentity("Minutelytrigger", "Minutelygroup")
                  .StartNow()
                  .WithSimpleSchedule(x => x
-                     .WithIntervalInHours(120)
+                     .WithIntervalInMinutes(5)
                      .RepeatForever())
                  .Build();
         }
-        private IJobDetail GetMonthlyJob()
+        private IJobDetail GetHourlyJob()
         {
-            return JobBuilder.Create<IMonthlyJob>()
-                .WithIdentity("monthlyjob", "monthlygroup")
+            return JobBuilder.Create<IHourlyJob>()
+                .WithIdentity("Hourlyjob", "Hourlygroup")
                 .Build();
         }
-        private ITrigger GetMonthlyJobTrigger()
+        private ITrigger GetHourlyJobTrigger()
         {
             return TriggerBuilder.Create()
-                 .WithIdentity("monthlytrigger", "monthlygroup")
+                 .WithIdentity("Hourlytrigger", "Hourlygroup")
                  .StartNow()
                  .WithSimpleSchedule(x => x
-                     .WithIntervalInHours(720)
+                     .WithIntervalInHours(1)
                      .RepeatForever())
                  .Build();
         }
         private static async Task<IScheduler> GetScheduler()
         {
             // Comment this if you don't want to use database start
-            var config = (NameValueCollection)ConfigurationManager.GetSection("quartz");
-            var factory = new StdSchedulerFactory(config);
+            //var config = (NameValueCollection)ConfigurationManager.GetSection("quartz");
+            //var factory = new StdSchedulerFactory(config);
             // Comment this if you don't want to use database end
 
             // Uncomment this if you want to use RAM instead of database start
-            //var props = new NameValueCollection { { "quartz.serializer.type", "binary" } };
-            //var factory = new StdSchedulerFactory(props);
+            var props = new NameValueCollection { { "quartz.serializer.type", "binary" } };
+            var factory = new StdSchedulerFactory(props);
             // Uncomment this if you want to use RAM instead of database end
             var scheduler = await factory.GetScheduler();
             return scheduler;
